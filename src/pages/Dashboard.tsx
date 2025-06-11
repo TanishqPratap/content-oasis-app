@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, DollarSign, Users, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import ContentUpload from '@/components/ContentUpload';
 
 type Content = Database['public']['Tables']['content']['Row'];
 
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [subscriptionPrice, setSubscriptionPrice] = useState(profile?.subscription_price?.toString() || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [loading, setLoading] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
     if (profile?.role !== 'creator') {
@@ -80,11 +82,20 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Creator Dashboard</h1>
-        <Button>
+        <Button onClick={() => setShowUpload(!showUpload)}>
           <Upload className="w-4 h-4 mr-2" />
-          Upload Content
+          {showUpload ? 'Hide Upload' : 'Upload Content'}
         </Button>
       </div>
+
+      {showUpload && (
+        <ContentUpload
+          onContentUploaded={() => {
+            fetchContent();
+            setShowUpload(false);
+          }}
+        />
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -116,8 +127,8 @@ export default function Dashboard() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+            <div className="text-2xl font-bold">{content.length}</div>
+            <p className="text-xs text-muted-foreground">Total posts</p>
           </CardContent>
         </Card>
       </div>
@@ -161,7 +172,7 @@ export default function Dashboard() {
       {/* Recent Content */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Content</CardTitle>
+          <CardTitle>Your Content ({content.length} posts)</CardTitle>
         </CardHeader>
         <CardContent>
           {content.length === 0 ? (
@@ -177,8 +188,18 @@ export default function Dashboard() {
                   <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
                     <span>Type: {item.content_type}</span>
                     <span>{item.is_premium ? 'Premium' : 'Free'}</span>
+                    {item.price && <span>Tip: ${item.price}</span>}
                     <span>Created: {new Date(item.created_at).toLocaleDateString()}</span>
                   </div>
+                  {item.media_url && (
+                    <div className="mt-2">
+                      {item.content_type === 'image' ? (
+                        <img src={item.media_url} alt={item.title} className="max-w-xs rounded" />
+                      ) : item.content_type === 'video' ? (
+                        <video src={item.media_url} controls className="max-w-xs rounded" />
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

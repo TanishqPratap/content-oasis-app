@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import SubscriberDashboard from "./pages/SubscriberDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function DashboardRouter() {
+  const { profile, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  if (profile?.role === 'creator') {
+    return <Dashboard />;
+  } else if (profile?.role === 'subscriber') {
+    return <SubscriberDashboard />;
+  }
+  
+  return <Navigate to="/auth" replace />;
+}
+
 function AppRoutes() {
   const { user, loading } = useAuth();
 
@@ -44,7 +61,7 @@ function AppRoutes() {
           path="/dashboard" 
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardRouter />
             </ProtectedRoute>
           } 
         />

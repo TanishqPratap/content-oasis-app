@@ -37,16 +37,9 @@ export default function Layout({ children }: LayoutProps) {
               <span>Home</span>
             </Link>
             
-            {profile?.role === 'creator' && (
-              <Link to="/dashboard" className="flex items-center space-x-1 text-sm hover:text-primary">
-                <Settings className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
-            )}
-            
-            <Link to="/subscriptions" className="flex items-center space-x-1 text-sm hover:text-primary">
-              <Heart className="w-4 h-4" />
-              <span>Subscriptions</span>
+            <Link to="/dashboard" className="flex items-center space-x-1 text-sm hover:text-primary">
+              <Settings className="w-4 h-4" />
+              <span>{profile?.role === 'creator' ? 'Creator Dashboard' : 'My Subscriptions'}</span>
             </Link>
             
             <Link to="/profile" className="flex items-center space-x-1 text-sm hover:text-primary">
