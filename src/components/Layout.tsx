@@ -1,0 +1,70 @@
+
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Heart, Home, Settings, LogOut } from 'lucide-react';
+
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  if (!user) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-primary">
+            ContentOasis
+          </Link>
+          
+          <nav className="flex items-center space-x-4">
+            <Link to="/" className="flex items-center space-x-1 text-sm hover:text-primary">
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </Link>
+            
+            {profile?.role === 'creator' && (
+              <Link to="/dashboard" className="flex items-center space-x-1 text-sm hover:text-primary">
+                <Settings className="w-4 h-4" />
+                <span>Dashboard</span>
+              </Link>
+            )}
+            
+            <Link to="/subscriptions" className="flex items-center space-x-1 text-sm hover:text-primary">
+              <Heart className="w-4 h-4" />
+              <span>Subscriptions</span>
+            </Link>
+            
+            <Link to="/profile" className="flex items-center space-x-1 text-sm hover:text-primary">
+              <User className="w-4 h-4" />
+              <span>{profile?.username}</span>
+            </Link>
+            
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        {children}
+      </main>
+    </div>
+  );
+}
