@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Image, Video, FileText } from 'lucide-react';
 
 interface ContentUploadProps {
   onContentUploaded: () => void;
@@ -24,6 +24,7 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
   const [price, setPrice] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -33,35 +34,59 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
       // Auto-detect content type based on file
       if (selectedFile.type.startsWith('image/')) {
         setContentType('image');
+        // Create preview for images
+        const reader = new FileReader();
+        reader.onload = (e) => setPreview(e.target?.result as string);
+        reader.readAsDataURL(selectedFile);
       } else if (selectedFile.type.startsWith('video/')) {
         setContentType('video');
+        setPreview(null);
       }
     }
   };
 
   const uploadFile = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${profile?.id}/${Date.now()}.${fileExt}`;
+    const fileName = `${profile?.id}/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+    
+    console.log('Uploading file:', fileName);
     
     const { data, error } = await supabase.storage
       .from('content-media')
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
     
     const { data: { publicUrl } } = supabase.storage
       .from('content-media')
       .getPublicUrl(data.path);
     
+    console.log('File uploaded successfully:', publicUrl);
     return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!title.trim()) {
       toast({
         title: "Error",
         description: "Title is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (profile?.role !== 'creator') {
+      toast({
+        title: "Error",
+        description: "Only creators can upload content",
         variant: "destructive"
       });
       return;
@@ -89,7 +114,10 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
           price: price ? parseFloat(price) : null
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Content creation error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
@@ -103,9 +131,11 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
       setIsPremium(true);
       setPrice('');
       setFile(null);
+      setPreview(null);
       
       onContentUploaded();
     } catch (error: any) {
+      console.error('Upload error:', error);
       toast({
         title: "Error uploading content",
         description: error.message,
@@ -116,21 +146,30 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
     }
   };
 
+  const removeFile = () => {
+    setFile(null);
+    setPreview(null);
+  };
+
   return (
-    <Card>
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Upload New Content</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          Upload New Content
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Content Title *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter content title..."
+              placeholder="Enter an engaging title for your content..."
               required
+              className="mt-2"
             />
           </div>
 
@@ -140,8 +179,9 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your content..."
+              placeholder="Describe your content to attract subscribers..."
               rows={3}
+              className="mt-2"
             />
           </div>
 
@@ -151,74 +191,99 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
               id="content-type"
               value={contentType}
               onChange={(e) => setContentType(e.target.value as 'text' | 'image' | 'video')}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-3 mt-2 border rounded-md bg-background"
             >
-              <option value="text">Text</option>
-              <option value="image">Image</option>
-              <option value="video">Video</option>
+              <option value="text">📝 Text Post</option>
+              <option value="image">🖼️ Image</option>
+              <option value="video">🎥 Video</option>
             </select>
           </div>
 
           {(contentType === 'image' || contentType === 'video') && (
             <div>
-              <Label htmlFor="file">Upload File</Label>
-              <div className="mt-1">
+              <Label htmlFor="file">Upload {contentType === 'image' ? 'Image' : 'Video'}</Label>
+              <div className="mt-2 space-y-4">
                 <input
                   id="file"
                   type="file"
                   onChange={handleFileChange}
                   accept={contentType === 'image' ? 'image/*' : 'video/*'}
-                  className="w-full p-2 border rounded-md"
+                  className="w-full p-3 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                 />
+                
                 {file && (
-                  <div className="mt-2 flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">{file.name}</span>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+                    <div className="flex items-center space-x-2">
+                      {contentType === 'image' ? <Image className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                      <span className="text-sm font-medium">{file.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setFile(null)}
+                      onClick={removeFile}
                     >
                       <X className="w-4 h-4" />
                     </Button>
+                  </div>
+                )}
+
+                {preview && contentType === 'image' && (
+                  <div className="mt-4">
+                    <img 
+                      src={preview} 
+                      alt="Preview" 
+                      className="max-w-full h-48 object-cover rounded-md border"
+                    />
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 p-4 bg-muted rounded-md">
             <input
               type="checkbox"
               id="premium"
               checked={isPremium}
               onChange={(e) => setIsPremium(e.target.checked)}
+              className="w-4 h-4"
             />
-            <Label htmlFor="premium">Premium Content (requires subscription)</Label>
+            <Label htmlFor="premium" className="text-sm">
+              Premium Content (requires active subscription to view)
+            </Label>
           </div>
 
           <div>
-            <Label htmlFor="price">Tip Price (optional)</Label>
+            <Label htmlFor="price">Optional Tip Price ($)</Label>
             <Input
               id="price"
               type="number"
               step="0.01"
+              min="0"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0.00"
+              className="mt-2"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Set an optional tip amount that fans can pay to support this content
+            </p>
           </div>
 
           <Button type="submit" disabled={uploading} className="w-full">
             {uploading ? (
               <>
                 <Upload className="w-4 h-4 mr-2 animate-spin" />
-                Uploading...
+                Uploading Content...
               </>
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload Content
+                Publish Content
               </>
             )}
           </Button>
