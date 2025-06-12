@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,7 +76,6 @@ export default function Home() {
   };
 
   const handleSubscribe = async (creatorId: string, price: number) => {
-    // For now, we'll simulate subscription (Stripe integration would go here)
     try {
       const { error } = await supabase
         .from('subscriptions')
@@ -86,7 +84,7 @@ export default function Home() {
           creator_id: creatorId,
           status: 'active',
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         });
 
       if (error) throw error;
@@ -159,7 +157,9 @@ export default function Home() {
             <p className="text-muted-foreground mb-4">
               Start following creators to see their content in your feed
             </p>
-            <Button>Discover Creators</Button>
+            <Button>
+              <Link to="/dashboard">Discover Creators</Link>
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -229,7 +229,7 @@ export default function Home() {
                       
                       {item.content_type === 'text' && (
                         <div className="bg-muted rounded-lg p-4">
-                          <p className="text-sm">Content available for subscribers...</p>
+                          <p className="text-sm">{item.description || "Text content available for viewing..."}</p>
                         </div>
                       )}
 

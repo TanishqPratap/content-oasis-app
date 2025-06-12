@@ -49,7 +49,7 @@ export default function ContentUpload({ onContentUploaded }: ContentUploadProps)
     const fileExt = file.name.split('.').pop();
     const fileName = `${profile?.id}/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
     
-    console.log('Uploading file:', fileName);
+    console.log('Uploading file to content-media bucket:', fileName);
     
     const { data, error } = await supabase.storage
       .from('content-media')

@@ -62,11 +62,58 @@ export default function SubscriberDashboard() {
   };
 
   const handleSubscribe = async (creatorId: string, subscriptionPrice: number) => {
-    // This will be implemented with Stripe integration
-    toast({
-      title: "Coming soon",
-      description: "Stripe payment integration will be implemented next.",
-    });
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .insert({
+          subscriber_id: profile?.id,
+          creator_id: creatorId,
+          status: 'active',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: `Successfully subscribed to creator for $${subscriptionPrice}/month`
+      });
+
+      fetchSubscriptions();
+      fetchCreators();
+    } catch (error: any) {
+      toast({
+        title: "Subscription failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUnsubscribe = async (subscriptionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ status: 'cancelled' })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Unsubscribed",
+        description: "You have successfully unsubscribed"
+      });
+
+      fetchSubscriptions();
+      fetchCreators();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   if (profile?.role !== 'subscriber') {
@@ -153,8 +200,13 @@ export default function SubscriberDashboard() {
                   <div className="text-right">
                     <p className="font-semibold">${subscription.profiles.subscription_price}/month</p>
                     <p className="text-sm text-muted-foreground">Active</p>
-                    <Button variant="outline" size="sm" className="mt-2">
-                      Manage
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => handleUnsubscribe(subscription.id)}
+                    >
+                      Unsubscribe
                     </Button>
                   </div>
                 </div>
