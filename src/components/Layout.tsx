@@ -26,7 +26,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/0db5d13c-c9b4-4ae2-b887-b87c81dd9ac7.png" 
+                src="/lovable-uploads/b67f1a2b-54ff-4178-8050-c93aee78de22.png" 
                 alt="ContentOasis" 
                 className="h-8 w-auto"
               />
@@ -46,7 +46,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/lovable-uploads/0db5d13c-c9b4-4ae2-b887-b87c81dd9ac7.png" 
+              src="/lovable-uploads/b67f1a2b-54ff-4178-8050-c93aee78de22.png" 
               alt="ContentOasis" 
               className="h-8 w-auto"
             />

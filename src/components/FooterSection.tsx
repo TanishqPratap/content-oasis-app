@@ -8,8 +8,13 @@ export default function FooterSection() {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="text-2xl font-bold text-primary mb-4 block">
-              ContentOasis
+            <Link to="/" className="flex items-center space-x-2 mb-4">
+              <img 
+                src="/lovable-uploads/b67f1a2b-54ff-4178-8050-c93aee78de22.png" 
+                alt="ContentOasis" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-primary">ContentOasis</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
               The premier content subscription platform for creators and subscribers. 

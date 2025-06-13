@@ -7,8 +7,13 @@ export default function LandingNav() {
   return (
     <nav className="fixed top-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-primary">
-          ContentOasis
+        <Link to="/" className="flex items-center space-x-2">
+          <img 
+            src="/lovable-uploads/b67f1a2b-54ff-4178-8050-c93aee78de22.png" 
+            alt="ContentOasis" 
+            className="h-8 w-auto"
+          />
+          <span className="text-2xl font-bold text-primary">ContentOasis</span>
         </Link>
         
         <div className="hidden md:flex items-center space-x-8">
