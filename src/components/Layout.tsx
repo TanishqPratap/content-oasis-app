@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Heart, Home, Settings, LogOut } from 'lucide-react';
+import { User, Heart, Home, Settings, LogOut, MessageCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,16 +19,38 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   if (!user) {
-    return <>{children}</>;
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header with Logo */}
+        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link to="/" className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/0db5d13c-c9b4-4ae2-b887-b87c81dd9ac7.png" 
+                alt="ContentOasis" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-primary">ContentOasis</span>
+            </Link>
+          </div>
+        </header>
+        {children}
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header with Logo */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            ContentOasis
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/0db5d13c-c9b4-4ae2-b887-b87c81dd9ac7.png" 
+              alt="ContentOasis" 
+              className="h-8 w-auto"
+            />
+            <span className="text-2xl font-bold text-primary">ContentOasis</span>
           </Link>
           
           <nav className="flex items-center space-x-4">
@@ -36,6 +58,13 @@ export default function Layout({ children }: LayoutProps) {
               <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
+            
+            {profile?.role === 'subscriber' && (
+              <Link to="/chat" className="flex items-center space-x-1 text-sm hover:text-primary">
+                <MessageCircle className="w-4 h-4" />
+                <span>Chat</span>
+              </Link>
+            )}
             
             <Link to="/dashboard" className="flex items-center space-x-1 text-sm hover:text-primary">
               <Settings className="w-4 h-4" />

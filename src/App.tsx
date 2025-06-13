@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import SubscriberDashboard from "./pages/SubscriberDashboard";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <DashboardRouter />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chat" 
+          element={
+            <ProtectedRoute>
+              <Chat />
             </ProtectedRoute>
           } 
         />

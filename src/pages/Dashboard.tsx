@@ -7,26 +7,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, DollarSign, Users, Eye, Settings, Image as ImageIcon, Video, FileText } from 'lucide-react';
+import { Upload, DollarSign, Users, Eye, Settings, Image as ImageIcon, Video, FileText, MessageCircle } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import ContentUpload from '@/components/ContentUpload';
 
 type Content = Database['public']['Tables']['content']['Row'];
 type Subscription = Database['public']['Tables']['subscriptions']['Row'];
+type ChatSession = Database['public']['Tables']['chat_sessions']['Row'];
 
 export default function Dashboard() {
   const { profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [content, setContent] = useState<Content[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [subscriptionPrice, setSubscriptionPrice] = useState(profile?.subscription_price?.toString() || '');
+  const [chatRate, setChatRate] = useState(profile?.chat_rate?.toString() || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [stats, setStats] = useState({
     totalSubscribers: 0,
     monthlyRevenue: 0,
-    totalViews: 0
+    totalViews: 0,
+    chatEarnings: 0
   });
 
   useEffect(() => {
@@ -35,6 +39,7 @@ export default function Dashboard() {
     }
     fetchContent();
     fetchSubscriptions();
+    fetchChatSessions();
   }, [profile]);
 
   const fetchContent = async () => {
@@ -76,12 +81,29 @@ export default function Dashboard() {
     }
   };
 
+  const fetchChatSessions = async () => {
+    const { data, error } = await supabase
+      .from('chat_sessions')
+      .select('*')
+      .eq('creator_id', profile?.id)
+      .eq('payment_status', 'paid');
+
+    if (error) {
+      console.error('Error fetching chat sessions:', error);
+    } else {
+      setChatSessions(data || []);
+      const chatEarnings = data?.reduce((total, session) => total + (session.total_amount || 0), 0) || 0;
+      setStats(prev => ({ ...prev, chatEarnings }));
+    }
+  };
+
   const updateCreatorProfile = async () => {
     setLoading(true);
     try {
       const { error } = await updateProfile({
         bio,
-        subscription_price: subscriptionPrice ? parseFloat(subscriptionPrice) : null
+        subscription_price: subscriptionPrice ? parseFloat(subscriptionPrice) : null,
+        chat_rate: chatRate ? parseFloat(chatRate) : null
       });
 
       if (error) throw error;
@@ -159,7 +181,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Subscribers</CardTitle>
@@ -181,6 +203,17 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">${stats.monthlyRevenue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">From active subscriptions</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Chat Earnings</CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats.chatEarnings.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">From paid chats</p>
           </CardContent>
         </Card>
 
@@ -216,21 +249,40 @@ export default function Dashboard() {
             />
           </div>
           
-          <div>
-            <Label htmlFor="price">Monthly Subscription Price ($)</Label>
-            <Input
-              id="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={subscriptionPrice}
-              onChange={(e) => setSubscriptionPrice(e.target.value)}
-              placeholder="9.99"
-              className="mt-1"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Set your monthly subscription price. Subscribers will pay this amount to access your premium content.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="price">Monthly Subscription Price ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={subscriptionPrice}
+                onChange={(e) => setSubscriptionPrice(e.target.value)}
+                placeholder="9.99"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Set your monthly subscription price for content access.
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="chatRate">Hourly Chat Rate ($)</Label>
+              <Input
+                id="chatRate"
+                type="number"
+                step="0.01"
+                min="0"
+                value={chatRate}
+                onChange={(e) => setChatRate(e.target.value)}
+                placeholder="25.00"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Set your hourly rate for paid DM conversations.
+              </p>
+            </div>
           </div>
           
           <Button onClick={updateCreatorProfile} disabled={loading}>

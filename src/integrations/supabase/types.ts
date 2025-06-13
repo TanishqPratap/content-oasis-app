@@ -9,6 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_sessions: {
+        Row: {
+          created_at: string
+          creator_id: string
+          hourly_rate: number
+          id: string
+          payment_status: string
+          session_end: string | null
+          session_start: string
+          stripe_payment_intent_id: string | null
+          subscriber_id: string
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          hourly_rate: number
+          id?: string
+          payment_status?: string
+          session_end?: string | null
+          session_start?: string
+          stripe_payment_intent_id?: string | null
+          subscriber_id: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          hourly_rate?: number
+          id?: string
+          payment_status?: string
+          session_end?: string | null
+          session_start?: string
+          stripe_payment_intent_id?: string | null
+          subscriber_id?: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_sessions_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content: {
         Row: {
           content_type: string
@@ -92,10 +149,53 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          recipient_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          recipient_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
+          chat_rate: number | null
           created_at: string
           display_name: string | null
           email: string
@@ -109,6 +209,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          chat_rate?: number | null
           created_at?: string
           display_name?: string | null
           email: string
@@ -122,6 +223,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          chat_rate?: number | null
           created_at?: string
           display_name?: string | null
           email?: string
