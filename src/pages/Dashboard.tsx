@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, DollarSign, Users, Eye, Settings, Image as ImageIcon, Video, FileText, MessageCircle } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import ContentUpload from '@/components/ContentUpload';
+import LiveStreamManager from '@/components/LiveStreamManager';
 
 type Content = Database['public']['Tables']['content']['Row'];
 type Subscription = Database['public']['Tables']['subscriptions']['Row'];
@@ -228,6 +228,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Live Streaming Section */}
+      <LiveStreamManager />
 
       {/* Profile Settings */}
       <Card>

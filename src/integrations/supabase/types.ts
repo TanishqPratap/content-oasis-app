@@ -149,6 +149,56 @@ export type Database = {
           },
         ]
       }
+      live_streams: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          ended_at: string | null
+          id: string
+          started_at: string | null
+          status: string
+          stream_key: string
+          title: string
+          updated_at: string
+          viewer_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          stream_key?: string
+          title: string
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          stream_key?: string
+          title?: string
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_streams_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -235,6 +285,45 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      stream_viewers: {
+        Row: {
+          id: string
+          joined_at: string
+          left_at: string | null
+          stream_id: string
+          viewer_id: string | null
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          stream_id: string
+          viewer_id?: string | null
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          stream_id?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_viewers_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stream_viewers_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
