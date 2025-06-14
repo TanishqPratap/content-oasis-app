@@ -93,12 +93,13 @@ export default function LiveStreamViewer() {
 
         if (error) throw error;
 
-        // Update viewer count
-        const { error: updateError } = await supabase.rpc('increment', {
-          table_name: 'live_streams',
-          row_id: streamId,
-          column_name: 'viewer_count'
-        });
+        // Update viewer count by incrementing
+        const { error: updateError } = await supabase
+          .from('live_streams')
+          .update({ 
+            viewer_count: (liveStreams.find(s => s.id === streamId)?.viewer_count || 0) + 1 
+          })
+          .eq('id', streamId);
 
         if (updateError) console.error('Error updating viewer count:', updateError);
       }
@@ -131,12 +132,14 @@ export default function LiveStreamViewer() {
 
       if (error) throw error;
 
-      // Update viewer count
-      const { error: updateError } = await supabase.rpc('decrement', {
-        table_name: 'live_streams',
-        row_id: streamId,
-        column_name: 'viewer_count'
-      });
+      // Update viewer count by decrementing
+      const currentCount = liveStreams.find(s => s.id === streamId)?.viewer_count || 0;
+      const { error: updateError } = await supabase
+        .from('live_streams')
+        .update({ 
+          viewer_count: Math.max(0, currentCount - 1)
+        })
+        .eq('id', streamId);
 
       if (updateError) console.error('Error updating viewer count:', updateError);
 
